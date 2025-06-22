@@ -1,6 +1,11 @@
 export function groupNotesByCategory(notes: any[], pinnedNotes: Set<string>) {
   const groupedNotes: any = {
     pinned: [],
+    today: [],
+    yesterday: [],
+    older: [],
+    7: [],
+    30: [],
   };
 
   notes.forEach((note) => {

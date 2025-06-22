@@ -1,6 +1,7 @@
 import { Note } from "./types";
 
 export function searchNotes(notes: Note[], searchTerm: string, sessionId: string): Note[] {
+    if (!searchTerm.trim()) return [];
     const searchLower = searchTerm.toLowerCase();
     
     return notes.filter((note) => {

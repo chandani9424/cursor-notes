@@ -10,42 +10,32 @@ export async function createNote(
   setSelectedNoteSlug: (slug: string | null) => void,
   isMobile: boolean
 ) {
-  const supabase = createClient();
-  const noteId = uuidv4();
-  const slug = `new-note-${noteId}`;
-
-  const note = {
-    id: noteId,
-    slug: slug,
-    title: "",
-    content: "",
-    public: false,
-    created_at: new Date().toISOString(),
-    session_id: sessionId,
-    category: "today",
-    emoji: "👋🏼",
-  };
-
   try {
-    const { error } = await supabase.from("notes").insert(note);
-
+    const id = uuidv4();
+    const slug = `new-note-${id}`;
+    const created_at = new Date().toISOString();
+    const note = {
+      id,
+      slug,
+      title: "",
+      content: "",
+      public: false,
+      session_id: sessionId || uuidv4(),
+      category: "today",
+      emoji: "👋🏼",
+      created_at
+    };
+    const supabase = createClient();
+    const { data, error } = (await supabase.from("notes").insert(note)) || { data: null, error: null };
     if (error) throw error;
-
     addNewPinnedNote(slug);
-
-    if (!isMobile) {
-      refreshSessionNotes().then(() => {
-        setSelectedNoteSlug(slug);
-        router.push(`/notes/${slug}`);
-        router.refresh();
-      });
+    await refreshSessionNotes();
+    if (isMobile) {
+      router.push(`/notes/${slug}`);
     } else {
-      router.push(`/notes/${slug}`).then(() => {
-        refreshSessionNotes();
-        setSelectedNoteSlug(slug);
-      });
+      setSelectedNoteSlug(slug);
+      if (router.refresh) router.refresh();
     }
-
     toast({
       description: "Private note created",
     });
